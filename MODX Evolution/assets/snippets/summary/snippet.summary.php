@@ -23,15 +23,15 @@ if(file_exists($summary) && !class_exists('SummaryText',false)){
 if(class_exists('SummaryText',false)){
   $action = array();
   
-  if(!isset($tags)){
+  if(empty($tags)){
   	$action[]='notags';
   }
   
-  if(isset($noparser)){
+  if(!empty($noparser)){
   	$action[]='noparser';
   }
   
-  if(isset($len)){
+  if(!empty($len)){
   	$action[]='len'.((int)$len>0 ? ':'.(int)$len : '');
   }
   
@@ -39,7 +39,7 @@ if(class_exists('SummaryText',false)){
   
   $summary = new SummaryText($text,$action);
   $out = $summary->run();
-  unset($summary);
+  unset($summary,$action);
 }else{
 	$out = $text;
 }

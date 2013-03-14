@@ -21,7 +21,7 @@
 
 if(empty($modx) || !($modx instanceof modX)) return '';
 
-if(isset($text)){
+if(isset($text) && !empty($text)){
     $input=$text;
 }
 
@@ -49,11 +49,11 @@ if(class_exists('SummaryText',false)){
   	$action[]='notags';
   }
   
-  if(empty($noparser)){
+  if(!empty($noparser)){
   	$action[]='noparser';
   }
   
-  if(isset($len)){
+  if(!empty($len)){
   	$action[]='len'.((int)$len>0 ? ':'.(int)$len : '');
   }
   
