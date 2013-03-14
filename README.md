@@ -1,6 +1,6 @@
 Summary
 =========
-Truncates the string to the specified length. Snippet should work correctly on all versions MODX, but the test was performed only on Evolution
+Truncates the string to the specified length
 
 documentation
 ---------
