@@ -4,7 +4,7 @@ Truncates the string to the specified length. Snippet should work correctly on a
 
 documentation
 ---------
-Russian: wiki http://wiki.modx.im/evolution:snippets:doclister:extender:summary
+Russian: wiki http://wiki.modx.im/evolution:snippets:truncate
 
 
 *I'm sorry for my english*
