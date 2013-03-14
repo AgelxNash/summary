@@ -2,9 +2,7 @@ Changelog for summary package.
 
 summary 1.0.1
 ====================================
-- Fix empty parameter
-- Fix <cut /> and TinyMCE
-- Add documentation
+- fix empty parameter
 
 summary 1.0.0
 =====================================

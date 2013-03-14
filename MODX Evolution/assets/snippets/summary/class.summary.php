@@ -8,7 +8,7 @@
  * @see https://github.com/AgelxNash/DocLister/blob/master/core/controller/extender/summary.extender.inc
  * @see http://wiki.modx.im/evolution:snippets:doclister:extender:summary
  * @date 14.03.2012
- * @version 1.0.0
+ * @version 1.0.1
  */
  
 class SummaryText{
@@ -59,8 +59,8 @@ class SummaryText{
     public function summary($resource, $truncLen, $truncOffset, $truncChars,$splitter){
         if ((mb_strstr($resource, $splitter, 'UTF-8'))) {
 		    // HTMLarea/XINHA encloses it in paragraph's
-			$summary = explode('<p>' . $splitter . '</p>', $resource); // For TinyMCE or if it isn't wrapped inside paragraph tags
-			$summary = explode($splitter, $summary['0']);
+            $summary = str_replace('<p>' . $splitter . '</p>', $resource); // For TinyMCE or if it isn't wrapped inside paragraph tags
+            $summary = explode($splitter, $summary);
 			$summary = $summary['0'];
 		}else if (mb_strlen($resource, 'UTF-8') > $truncLen) {
 		    $summary = $this->html_substr($resource, $truncLen, $truncOffset, $truncChars);

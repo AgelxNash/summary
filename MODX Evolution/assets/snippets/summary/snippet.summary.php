@@ -9,7 +9,7 @@
  * @see https://github.com/AgelxNash/DocLister/blob/master/core/controller/extender/summary.extender.inc
  * @see http://wiki.modx.im/evolution:snippets:doclister:extender:summary
  * @date 14.03.2012
- * @version 1.0.0
+ * @version 1.0.1
  */
  if(!defined('MODX_BASE_PATH')) {die('HACK?');}
  
