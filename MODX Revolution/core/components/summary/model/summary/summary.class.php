@@ -8,25 +8,59 @@
  * @category extender
  * @license GNU General Public License (GPL), http://www.gnu.org/copyleft/gpl.html
  * @author Agel_Nash <Agel_Nash@xaker.ru>
- * @package DocLister
- * @see https://github.com/AgelxNash/DocLister/blob/master/core/controller/extender/summary.extender.inc
- * @see http://wiki.modx.im/evolution:snippets:truncate
- * @date 14.03.2012
- * @version 1.0.1
+ * @see http://blog.agel-nash.ru/addon/summary.html
+ * @date 31.07.2013
+ * @version 1.0.2
  */
  
 class SummaryText{
 	private $_cfg = array('content'=>'','summary'=>'');
-	
-	public function __construct($text,$action){
+    private $_useCut = null;
+    
+ 	public function __construct($text,$action){
 		$this->_cfg['content'] = is_scalar($text) ? $text : '';
+        $this->_cfg['original'] = $this->_cfg['content'];
 		$this->_cfg['summary'] = is_scalar($action) ? $action : '';
 	}
-
-    public function run(){
+    public function setCut($cut){
+        if(is_scalar($cut) && $cut!=''){
+            $this->_cfg['cut'] = $cut;
+            $flag = true;
+        }else{
+            $flag = false;
+        }
+        return $flag;
+    }
+    public function getCut(){
+        return isset($this->_cfg['cut']) ? $this->_cfg['cut'] : '<cut/>';
+    }
+    public function dotted($scheme=0){
+        switch($scheme){
+            case 1:{
+                if($this->_useCut || $this->_cfg['content']!=$this->_cfg['original']){
+                    $this->_cfg['content'].= '&hellip;'; //...
+                }
+                break;
+            }
+            case 2:{
+                if($this->_cfg['content']!=$this->_cfg['original']){
+                    if($this->_useCut){
+                        $this->_cfg['content'].= '.';
+                    } else {
+                       $this->_cfg['content'].= '&hellip;'; //...
+                    }
+                }
+                break;
+            }
+        }
+        return $this->_cfg['content'];
+    }
+    public function run($dotted=0){
         if(isset($this->_cfg['content'],$this->_cfg['summary']) && $this->_cfg['summary']!='' && $this->_cfg['content']!=''){
             $param=explode(",",$this->_cfg['summary']);
+            $this->_cfg['content'] = $this->beforeCut($this->_cfg['content'], $this->getCut());
             foreach($param as $doing){
+               
                 $process=explode(":",$doing);
                 switch($process[0]){
                     case 'notags':{
@@ -41,13 +75,13 @@ class SummaryText{
                         if(!(isset($process[1]) && $process[1]>0)){
                             $process[1]=200;
                         }
-                        $this->_cfg['content']=$this->summary($this->_cfg['content'],$process[1],50,true,"<cut/>");
+                        $this->_cfg['content']=$this->summary($this->_cfg['content'],$process[1],50,true, $this->getCut());
                         break;
                     }
                 }
             }
         }
-        return $this->_cfg['content'];
+        return $this->dotted($dotted);
     }
 
 	/*
@@ -59,19 +93,27 @@ class SummaryText{
 	final public function sanitarData($data){
 		return is_scalar($data) ? str_replace(array('[', ']'), array('&#91;', '&#93;'),htmlspecialchars($data)) : '';
 	}
-	 
-    public function summary($resource, $truncLen, $truncOffset, $truncChars,$splitter){
-        if ((mb_strstr($resource, $splitter, 'UTF-8'))) {
-		    // HTMLarea/XINHA encloses it in paragraph's
-			$summary = str_replace('<p>' . $splitter . '</p>', $resource); // For TinyMCE or if it isn't wrapped inside paragraph tags
-			$summary = explode($splitter, $summary);
-			$summary = $summary['0'];
-		}else if (mb_strlen($resource, 'UTF-8') > $truncLen) {
+    public function beforeCut($resource,$splitter=''){
+        if($splitter!==''){
+            $summary = str_replace('<p>' . $splitter . '</p>', $splitter, $resource); // For TinyMCE or if it isn't wrapped inside paragraph tags
+            $summary = explode($splitter, $summary, 2);
+            $this->_useCut = isset($summary[1]);
+	        $summary = $summary['0'];
+        }else{
+            $summary = $resource;
+        }
+        return $summary;
+    }
+    
+    public function summary($resource, $truncLen, $truncOffset, $truncChars,$splitter=''){
+        if (isset($this->_useCut) && $splitter!='' && mb_strstr($resource, $splitter, 'UTF-8')) {
+           $summary = $this->beforeCut($resource,$splitter);
+		}else if ($this->_useCut!==true && (mb_strlen($resource, 'UTF-8') > $truncLen)) {
 		    $summary = $this->html_substr($resource, $truncLen, $truncOffset, $truncChars);
 		} else {
 		    $summary = $resource;
 		}
-
+        
         $summary = $this->closeTags($summary);
 		$summary=$this->rTriming($summary);
 

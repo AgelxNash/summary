@@ -59,6 +59,26 @@ $snippets[0]->setProperties(array(
             array('text' => 'YES','value' => '1'),
             array('text' => 'NO','value' => '0'),
         ),
+    ),
+	array(
+        'name' => 'dotted',
+        'value' => '0',
+        'type' => 'list',
+        'desc' => 'summary.dotted',
+        'lexicon' => 'summary:properties',
+        'options' => array(
+            array('text' => 'Yes','value' => '1'),
+            array('text' => '1/3 dot','value' => '2'),
+			array('text' => 'No','value' => '0'),
+        ),
+    ),
+	array(
+        'name' => 'cut',
+        'value' => '<cut/>',
+        'type' => 'textfield',
+        'desc' => 'summary.cut',
+        'lexicon' => 'summary:properties',
+		'options' => ''
     ))
 );
 return $snippets;

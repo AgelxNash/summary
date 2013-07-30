@@ -2,14 +2,12 @@
   /**
  * summary
  *
- * @category snippet, DocLister
- * @internal @modx_category content
+ * @category extender
  * @license GNU General Public License (GPL), http://www.gnu.org/copyleft/gpl.html
  * @author Agel_Nash <Agel_Nash@xaker.ru>
- * @see https://github.com/AgelxNash/DocLister/blob/master/core/controller/extender/summary.extender.inc
- * @see http://wiki.modx.im/evolution:snippets:doclister:extender:summary
- * @date 14.03.2012
- * @version 1.0.1
+ * @see http://blog.agel-nash.ru/addon/summary.html
+ * @date 31.07.2013
+ * @version 1.0.2
  */
  if(!defined('MODX_BASE_PATH')) {die('HACK?');}
  
@@ -35,10 +33,19 @@ if(class_exists('SummaryText',false)){
   	$action[]='len'.((int)$len>0 ? ':'.(int)$len : '');
   }
   
+  
   $action=implode(",",$action);
   
+  if(!isset($dot)){
+       $dot = 0;
+    }
+
+	
   $summary = new SummaryText($text,$action);
-  $out = $summary->run();
+  if(!empty($cut)){
+    $summary->setCut($cut);   
+  }
+  $out = $summary->run($dot);
   unset($summary,$action);
 }else{
 	$out = $text;

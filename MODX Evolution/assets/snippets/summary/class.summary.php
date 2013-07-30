@@ -1,28 +1,66 @@
 <?php
 /**
- * SummaryText
+ * summary
+ * Truncates the HTML string to the specified length
+ *
+ * Copyright 2013 by Agel_Nash <Agel_Nash@xaker.ru>
  *
  * @category extender
  * @license GNU General Public License (GPL), http://www.gnu.org/copyleft/gpl.html
  * @author Agel_Nash <Agel_Nash@xaker.ru>
- * @see https://github.com/AgelxNash/DocLister/blob/master/core/controller/extender/summary.extender.inc
- * @see http://wiki.modx.im/evolution:snippets:doclister:extender:summary
- * @date 14.03.2012
- * @version 1.0.1
+ * @see http://blog.agel-nash.ru/addon/summary.html
+ * @date 31.07.2013
+ * @version 1.0.2
  */
  
 class SummaryText{
 	private $_cfg = array('content'=>'','summary'=>'');
-	
-	public function __construct($text,$action){
+    private $_useCut = null;
+    
+ 	public function __construct($text,$action){
 		$this->_cfg['content'] = is_scalar($text) ? $text : '';
+        $this->_cfg['original'] = $this->_cfg['content'];
 		$this->_cfg['summary'] = is_scalar($action) ? $action : '';
 	}
-
-    public function run(){
+    public function setCut($cut){
+        if(is_scalar($cut) && $cut!=''){
+            $this->_cfg['cut'] = $cut;
+            $flag = true;
+        }else{
+            $flag = false;
+        }
+        return $flag;
+    }
+    public function getCut(){
+        return isset($this->_cfg['cut']) ? $this->_cfg['cut'] : '<cut/>';
+    }
+    public function dotted($scheme=0){
+        switch($scheme){
+            case 1:{
+                if($this->_useCut || $this->_cfg['content']!=$this->_cfg['original']){
+                    $this->_cfg['content'].= '&hellip;'; //...
+                }
+                break;
+            }
+            case 2:{
+                if($this->_cfg['content']!=$this->_cfg['original']){
+                    if($this->_useCut){
+                        $this->_cfg['content'].= '.';
+                    } else {
+                       $this->_cfg['content'].= '&hellip;'; //...
+                    }
+                }
+                break;
+            }
+        }
+        return $this->_cfg['content'];
+    }
+    public function run($dotted=0){
         if(isset($this->_cfg['content'],$this->_cfg['summary']) && $this->_cfg['summary']!='' && $this->_cfg['content']!=''){
             $param=explode(",",$this->_cfg['summary']);
+            $this->_cfg['content'] = $this->beforeCut($this->_cfg['content'], $this->getCut());
             foreach($param as $doing){
+               
                 $process=explode(":",$doing);
                 switch($process[0]){
                     case 'notags':{
@@ -37,13 +75,13 @@ class SummaryText{
                         if(!(isset($process[1]) && $process[1]>0)){
                             $process[1]=200;
                         }
-                        $this->_cfg['content']=$this->summary($this->_cfg['content'],$process[1],50,true,"<cut/>");
+                        $this->_cfg['content']=$this->summary($this->_cfg['content'],$process[1],50,true, $this->getCut());
                         break;
                     }
                 }
             }
         }
-        return $this->_cfg['content'];
+        return $this->dotted($dotted);
     }
 
 	/*
@@ -55,24 +93,37 @@ class SummaryText{
 	final public function sanitarData($data){
 		return is_scalar($data) ? str_replace(array('[', '%5B', ']', '%5D','{','%7B','}','%7D'), array('&#91;', '&#91;', '&#93;', '&#93;','&#123;','&#123;','&#125;','&#125;'),htmlspecialchars($data)) : '';	
 	}
-	 
-    public function summary($resource, $truncLen, $truncOffset, $truncChars,$splitter){
-        if ((mb_strstr($resource, $splitter, 'UTF-8'))) {
-		    // HTMLarea/XINHA encloses it in paragraph's
-            $summary = str_replace('<p>' . $splitter . '</p>', $resource); // For TinyMCE or if it isn't wrapped inside paragraph tags
-            $summary = explode($splitter, $summary);
-			$summary = $summary['0'];
-		}else if (mb_strlen($resource, 'UTF-8') > $truncLen) {
+    public function beforeCut($resource,$splitter=''){
+        if($splitter!==''){
+            $summary = str_replace('<p>' . $splitter . '</p>', $splitter, $resource); // For TinyMCE or if it isn't wrapped inside paragraph tags
+            $summary = explode($splitter, $summary, 2);
+            $this->_useCut = isset($summary[1]);
+	        $summary = $summary['0'];
+        }else{
+            $summary = $resource;
+        }
+        return $summary;
+    }
+    
+    public function summary($resource, $truncLen, $truncOffset, $truncChars,$splitter=''){
+        if (isset($this->_useCut) && $splitter!='' && mb_strstr($resource, $splitter, 'UTF-8')) {
+           $summary = $this->beforeCut($resource,$splitter);
+		}else if ($this->_useCut!==true && (mb_strlen($resource, 'UTF-8') > $truncLen)) {
 		    $summary = $this->html_substr($resource, $truncLen, $truncOffset, $truncChars);
 		} else {
 		    $summary = $resource;
 		}
-
+        
         $summary = $this->closeTags($summary);
 		$summary=$this->rTriming($summary);
 
         return $summary;
 	}
+
+    /*
+    * @see summary extender for Ditto (truncate::html_substr)
+    * @link https://github.com/modxcms/evolution/blob/develop/assets/snippets/ditto/extenders/summary.extender.inc.php#L142
+    */
     public function html_substr($posttext, $minimum_length = 200, $length_offset = 100, $truncChars=false) {
 		   $tag_counter = 0;
 		   $quotes_on = FALSE;
@@ -125,6 +176,11 @@ class SummaryText{
 		       }
 		   }  return $this->textTrunc($posttext, $minimum_length + $length_offset);
 		}
+
+    /*
+     * @see summary extender for Ditto (truncate::textTrunc)
+     * @link https://github.com/modxcms/evolution/blob/develop/assets/snippets/ditto/extenders/summary.extender.inc.php#L213
+     */
 	public function textTrunc($string, $limit, $break=". ") {
 	  	// Original PHP code from The Art of Web: www.the-art-of-web.com
 
@@ -141,6 +197,7 @@ class SummaryText{
 		}
 	    return $string;
 	  }
+
 	public function rTriming($str){
 			$str=str_replace(" &ndash; "," - ",$str);
 			$str=preg_replace('/[\r\n]++/',' ', $str);
@@ -148,6 +205,11 @@ class SummaryText{
 			$str=str_replace(" - "," &ndash; ",$str);
 			return $str;
 		}
+
+    /*
+     * @see summary extender for Ditto (truncate::closeTags)
+     * @link https://github.com/modxcms/evolution/blob/develop/assets/snippets/ditto/extenders/summary.extender.inc.php#L227
+     */
     private function closeTags($text) {
 			$openPattern = "/<([^\/].*?)>/";
 			$closePattern = "/<\/(.*?)>/";

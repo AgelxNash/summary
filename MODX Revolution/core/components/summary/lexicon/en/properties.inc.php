@@ -21,3 +21,6 @@ $_lang['summary.text'] = 'The text to be cut';
 $_lang['summary.len'] = 'The required length';
 $_lang['summary.noparser'] = 'Terminate parsing MODX and HTML tags';
 $_lang['summary.tags'] = 'Delete all HTML tags from the text';
+
+$_lang['summary.dotted'] = 'Scheme for add dotted to the end of the text';
+$_lang['summary.cut'] = 'Text for separation the description text closing';

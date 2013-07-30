@@ -1,8 +1,17 @@
 Changelog for summary package.
 
+summary 1.0.2
+====================================
+- Add dotted scheme parameter 
+- Fix <cut /> && strip_tags
+- Add cut parameter
+
+
 summary 1.0.1
 ====================================
-- fix empty parameter
+- Fix empty parameter
+- Fix <cut /> and TinyMCE
+- Add documentation
 
 summary 1.0.0
 =====================================

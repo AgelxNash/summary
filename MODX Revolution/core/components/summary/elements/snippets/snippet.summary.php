@@ -1,24 +1,21 @@
 <?php
 /**
-* summary
-* Truncates the HTML string to the specified length
-*
-* Copyright 2013 by Agel_Nash <Agel_Nash@xaker.ru>
-*
-* @category extender
-* @license GNU General Public License (GPL), http://www.gnu.org/copyleft/gpl.html
-* @author Agel_Nash <Agel_Nash@xaker.ru>
-* @package DocLister
-* @see https://github.com/AgelxNash/DocLister/blob/master/core/controller/extender/summary.extender.inc
-* @see http://wiki.modx.im/evolution:snippets:truncate
-* @date 14.03.2012
-* @version 1.0.1
-*
-* @var modX $modx
-* @var array $scriptProperties
-* @var string $input
+ * summary
+ * Truncates the HTML string to the specified length
+ *
+ * Copyright 2013 by Agel_Nash <Agel_Nash@xaker.ru>
+ *
+ * @category extender
+ * @license GNU General Public License (GPL), http://www.gnu.org/copyleft/gpl.html
+ * @author Agel_Nash <Agel_Nash@xaker.ru>
+ * @see http://blog.agel-nash.ru/addon/summary.html
+ * @date 31.07.2013
+ * @version 1.0.2
+ *
+ * @var modX $modx
+ * @var array $scriptProperties
+ * @var string $input
 */
-
 if(empty($modx) || !($modx instanceof modX)) return '';
 
 if(isset($text) && !empty($text)){
@@ -52,6 +49,8 @@ if(class_exists('SummaryText',false)){
                 case 'tags': $tags=$val; break;
                 case 'len': $len=$val; break;
                 case 'noparser': $noparser=$val; break;
+                case 'dotted': $dot=$val; break;
+                case 'cut': $cut=$val; break;
             }
         }
     }
@@ -66,11 +65,17 @@ if(class_exists('SummaryText',false)){
     if(!empty($len)){
         $action[]='len'.((int)$len>0 ? ':'.(int)$len : '');
     }
-
+    
     $action=implode(",",$action);
 
+    if(!isset($dot)){
+       $dot = 0;
+    }
     $summary = new SummaryText($input,$action);
-    $out = $summary->run();
+    if(!empty($cut)){
+        $summary->setCut($cut);   
+    }
+    $out = $summary->run($dot);
 
     unset($summary,$input,$action);
 
