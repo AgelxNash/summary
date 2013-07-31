@@ -1,5 +1,9 @@
 Changelog for summary package.
 
+summary 1.0.3
+====================================
+- fix html entities at the end of the text
+
 summary 1.0.2
 ====================================
 - Add dotted scheme parameter 

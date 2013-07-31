@@ -10,12 +10,14 @@
  * @author Agel_Nash <Agel_Nash@xaker.ru>
  * @see http://blog.agel-nash.ru/addon/summary.html
  * @date 31.07.2013
- * @version 1.0.2
+ * @version 1.0.3
  */
  
 class SummaryText{
 	private $_cfg = array('content'=>'','summary'=>'');
     private $_useCut = null;
+    private $_useSubstr = false;
+    private $_dotted = 0;
     
  	public function __construct($text,$action){
 		$this->_cfg['content'] = is_scalar($text) ? $text : '';
@@ -35,27 +37,15 @@ class SummaryText{
         return isset($this->_cfg['cut']) ? $this->_cfg['cut'] : '<cut/>';
     }
     public function dotted($scheme=0){
-        switch($scheme){
-            case 1:{
-                if($this->_useCut || $this->_cfg['content']!=$this->_cfg['original']){
-                    $this->_cfg['content'].= '&hellip;'; //...
-                }
-                break;
-            }
-            case 2:{
-                if($this->_cfg['content']!=$this->_cfg['original']){
-                    if($this->_useCut){
-                        $this->_cfg['content'].= '.';
-                    } else {
-                       $this->_cfg['content'].= '&hellip;'; //...
-                    }
-                }
-                break;
-            }
+        if(($scheme==1 && ($this->_useCut || $this->_useSubstr)) || ($scheme==2 && $this->_useSubstr && !$this->_useCut)){
+            $this->_cfg['content'].= '&hellip;'; //...
+        }else if($scheme && (!$this->_useCut || $scheme!=2)){
+            $this->_cfg['content'].= '.';
         }
         return $this->_cfg['content'];
     }
     public function run($dotted=0){
+        $this->_dotted = $dotted;
         if(isset($this->_cfg['content'],$this->_cfg['summary']) && $this->_cfg['summary']!='' && $this->_cfg['content']!=''){
             $param=explode(",",$this->_cfg['summary']);
             $this->_cfg['content'] = $this->beforeCut($this->_cfg['content'], $this->getCut());
@@ -109,13 +99,15 @@ class SummaryText{
         if (isset($this->_useCut) && $splitter!='' && mb_strstr($resource, $splitter, 'UTF-8')) {
            $summary = $this->beforeCut($resource,$splitter);
 		}else if ($this->_useCut!==true && (mb_strlen($resource, 'UTF-8') > $truncLen)) {
+            
 		    $summary = $this->html_substr($resource, $truncLen, $truncOffset, $truncChars);
+            if($resource!=$summary) $this->_useSubstr = true;
 		} else {
 		    $summary = $resource;
 		}
         
         $summary = $this->closeTags($summary);
-		$summary=$this->rTriming($summary);
+		$summary=$this->rTriming($summary,$this->_dotted);
 
         return $summary;
 	}
@@ -199,10 +191,10 @@ class SummaryText{
 	  }
 
 	public function rTriming($str){
-			$str=str_replace(" &ndash; "," - ",$str);
 			$str=preg_replace('/[\r\n]++/',' ', $str);
-			$str=preg_replace("/([\.,\-:!?;\s]+)$/ui","",$str);
-			$str=str_replace(" - "," &ndash; ",$str);
+            if(!$this->_useCut || $this->_dotted!=2){
+			    $str=preg_replace("/(([\.,\-:!?;\s])|(&\w+;))+$/ui","",$str);
+            }
 			return $str;
 		}
 
