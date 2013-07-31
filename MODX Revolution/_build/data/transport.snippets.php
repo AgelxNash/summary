@@ -68,7 +68,7 @@ $snippets[0]->setProperties(array(
         'lexicon' => 'summary:properties',
         'options' => array(
             array('text' => 'Yes','value' => '1'),
-            array('text' => '1/3 dot','value' => '2'),
+            array('text' => 'Cut ignore','value' => '2'),
 			array('text' => 'No','value' => '0'),
         ),
     ),
